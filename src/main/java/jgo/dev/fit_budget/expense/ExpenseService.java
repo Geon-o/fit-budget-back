@@ -19,14 +19,14 @@ public class ExpenseService {
 
     private final ExpenseRepository expenseRepository;
 
-    public List<ExpenseResponse> getExpenses() {
-        return expenseRepository.findAll().stream()
+    public List<ExpenseResponse> getExpenses(UUID ledgerId) {
+        return expenseRepository.findByLedgerId(ledgerId).stream()
                 .map(ExpenseResponse::from)
                 .toList();
     }
 
-    public ExpenseResponse addExpense(ExpenseRequest request) {
-        Expense expense = new Expense(request.expenseDate(), request.amount(), request.category(), request.memo());
+    public ExpenseResponse addExpense(UUID ledgerId, ExpenseRequest request) {
+        Expense expense = new Expense(ledgerId, request.expenseDate(), request.amount(), request.category(), request.memo());
         return ExpenseResponse.from(expenseRepository.save(expense));
     }
 

@@ -15,15 +15,15 @@ public class RecurringExpenseService {
 
     private final RecurringExpenseRepository recurringExpenseRepository;
 
-    public List<RecurringExpenseResponse> getRecurringExpenses() {
-        return recurringExpenseRepository.findAll().stream()
+    public List<RecurringExpenseResponse> getRecurringExpenses(UUID ledgerId) {
+        return recurringExpenseRepository.findByLedgerId(ledgerId).stream()
                 .map(RecurringExpenseResponse::from)
                 .toList();
     }
 
-    public RecurringExpenseResponse addRecurringExpense(RecurringExpenseRequest request) {
+    public RecurringExpenseResponse addRecurringExpense(UUID ledgerId, RecurringExpenseRequest request) {
         RecurringExpense recurringExpense = new RecurringExpense(
-                request.memo(), request.dayOfMonth(), request.amount());
+                ledgerId, request.memo(), request.dayOfMonth(), request.amount());
         return RecurringExpenseResponse.from(recurringExpenseRepository.save(recurringExpense));
     }
 

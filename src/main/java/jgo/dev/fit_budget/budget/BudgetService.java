@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -15,20 +16,20 @@ public class BudgetService {
 
     private final BudgetRepository budgetRepository;
 
-    public List<BudgetResponse> getBudgets() {
-        return budgetRepository.findAll().stream()
+    public List<BudgetResponse> getBudgets(UUID ledgerId) {
+        return budgetRepository.findByLedgerId(ledgerId).stream()
                 .map(BudgetResponse::from)
                 .toList();
     }
 
     @Transactional
-    public BudgetResponse saveBudget(BudgetRequest request) {
-        Budget budget = budgetRepository.findByYearMonth(request.yearMonth())
+    public BudgetResponse saveBudget(UUID ledgerId, BudgetRequest request) {
+        Budget budget = budgetRepository.findByLedgerIdAndYearMonth(ledgerId, request.yearMonth())
                 .orElse(null);
 
         if (budget == null) {
             budget = budgetRepository.save(new Budget(
-                    request.yearMonth(), request.monthlyBudget(), request.savingGoal(), request.paymentDate()));
+                    ledgerId, request.yearMonth(), request.monthlyBudget(), request.savingGoal(), request.paymentDate()));
         } else {
             budget.update(request.monthlyBudget(), request.savingGoal(), request.paymentDate());
         }

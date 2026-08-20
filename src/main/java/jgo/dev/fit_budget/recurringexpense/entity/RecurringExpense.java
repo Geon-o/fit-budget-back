@@ -21,6 +21,9 @@ public class RecurringExpense {
     private UUID id;
 
     @Column(nullable = false)
+    private UUID ledgerId;
+
+    @Column(nullable = false)
     private String memo;
 
     @Column(nullable = false)
@@ -28,7 +31,8 @@ public class RecurringExpense {
 
     private Long amount;
 
-    public RecurringExpense(String memo, Integer dayOfMonth, Long amount) {
+    public RecurringExpense(UUID ledgerId, String memo, Integer dayOfMonth, Long amount) {
+        this.ledgerId = ledgerId;
         this.memo = memo;
         this.dayOfMonth = dayOfMonth;
         this.amount = amount;

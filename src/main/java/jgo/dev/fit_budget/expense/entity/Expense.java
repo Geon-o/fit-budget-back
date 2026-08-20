@@ -22,6 +22,9 @@ public class Expense {
     private UUID id;
 
     @Column(nullable = false)
+    private UUID ledgerId;
+
+    @Column(nullable = false)
     private LocalDate expenseDate;
 
     @Column(nullable = false)
@@ -35,7 +38,8 @@ public class Expense {
     @Column(nullable = false)
     private String source;
 
-    public Expense(LocalDate expenseDate, Long amount, String category, String memo) {
+    public Expense(UUID ledgerId, LocalDate expenseDate, Long amount, String category, String memo) {
+        this.ledgerId = ledgerId;
         this.expenseDate = expenseDate;
         this.amount = amount;
         this.category = category;

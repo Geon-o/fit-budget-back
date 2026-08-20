@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -13,21 +14,21 @@ public class MonthClosureService {
 
     private final MonthClosureRepository monthClosureRepository;
 
-    public List<String> getClosedMonths() {
-        return monthClosureRepository.findAll().stream()
+    public List<String> getClosedMonths(UUID ledgerId) {
+        return monthClosureRepository.findByLedgerId(ledgerId).stream()
                 .map(MonthClosure::getYearMonth)
                 .toList();
     }
 
     @Transactional
-    public void close(String yearMonth) {
-        if (!monthClosureRepository.existsByYearMonth(yearMonth)) {
-            monthClosureRepository.save(new MonthClosure(yearMonth));
+    public void close(UUID ledgerId, String yearMonth) {
+        if (!monthClosureRepository.existsByLedgerIdAndYearMonth(ledgerId, yearMonth)) {
+            monthClosureRepository.save(new MonthClosure(ledgerId, yearMonth));
         }
     }
 
     @Transactional
-    public void reopen(String yearMonth) {
-        monthClosureRepository.deleteByYearMonth(yearMonth);
+    public void reopen(UUID ledgerId, String yearMonth) {
+        monthClosureRepository.deleteByLedgerIdAndYearMonth(ledgerId, yearMonth);
     }
 }

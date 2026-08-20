@@ -18,26 +18,27 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/recurring-expenses")
+@RequestMapping("/api/ledgers/{ledgerId}/recurring-expenses")
 @RequiredArgsConstructor
 public class RecurringExpenseController {
 
     private final RecurringExpenseService recurringExpenseService;
 
     @GetMapping
-    public List<RecurringExpenseResponse> getRecurringExpenses() {
-        return recurringExpenseService.getRecurringExpenses();
+    public List<RecurringExpenseResponse> getRecurringExpenses(@PathVariable UUID ledgerId) {
+        return recurringExpenseService.getRecurringExpenses(ledgerId);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public RecurringExpenseResponse addRecurringExpense(@Valid @RequestBody RecurringExpenseRequest request) {
-        return recurringExpenseService.addRecurringExpense(request);
+    public RecurringExpenseResponse addRecurringExpense(
+            @PathVariable UUID ledgerId, @Valid @RequestBody RecurringExpenseRequest request) {
+        return recurringExpenseService.addRecurringExpense(ledgerId, request);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteRecurringExpense(@PathVariable("id") UUID id) {
+    public void deleteRecurringExpense(@PathVariable UUID ledgerId, @PathVariable("id") UUID id) {
         recurringExpenseService.deleteRecurringExpense(id);
     }
 }

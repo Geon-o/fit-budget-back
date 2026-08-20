@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -12,7 +13,7 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 @Entity
-@Table(name = "budget")
+@Table(name = "budget", uniqueConstraints = @UniqueConstraint(columnNames = {"ledger_id", "year_month"}))
 @Getter
 @NoArgsConstructor
 public class Budget {
@@ -21,7 +22,10 @@ public class Budget {
     @GeneratedValue
     private UUID id;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
+    private UUID ledgerId;
+
+    @Column(nullable = false)
     private String yearMonth;
 
     @Column(nullable = false)
@@ -33,7 +37,8 @@ public class Budget {
     @Column(nullable = false)
     private LocalDate paymentDate;
 
-    public Budget(String yearMonth, Long monthlyBudget, Long savingGoal, LocalDate paymentDate) {
+    public Budget(UUID ledgerId, String yearMonth, Long monthlyBudget, Long savingGoal, LocalDate paymentDate) {
+        this.ledgerId = ledgerId;
         this.yearMonth = yearMonth;
         this.monthlyBudget = monthlyBudget;
         this.savingGoal = savingGoal;

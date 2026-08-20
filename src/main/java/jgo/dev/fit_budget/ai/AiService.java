@@ -11,6 +11,7 @@ import java.time.YearMonth;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -21,15 +22,15 @@ public class AiService {
     private final BudgetService budgetService;
     private final AiSidecarClient aiSidecarClient;
 
-    public String query(String question) {
-        return aiSidecarClient.ask(question, buildCurrentMonthSummary());
+    public String query(UUID ledgerId, String question) {
+        return aiSidecarClient.ask(question, buildCurrentMonthSummary(ledgerId));
     }
 
-    private Map<String, Object> buildCurrentMonthSummary() {
+    private Map<String, Object> buildCurrentMonthSummary(UUID ledgerId) {
         String yearMonth = YearMonth.now().toString();
         String previousYearMonth = YearMonth.now().minusMonths(1).toString();
 
-        List<ExpenseResponse> expenses = expenseService.getExpenses();
+        List<ExpenseResponse> expenses = expenseService.getExpenses(ledgerId);
 
         Map<String, Long> currentMonthExpenseByCategory = expenses.stream()
                 .filter(e -> e.expenseDate().toString().startsWith(yearMonth))
@@ -42,7 +43,7 @@ public class AiService {
                 .mapToLong(ExpenseResponse::amount)
                 .sum();
 
-        BudgetResponse budget = budgetService.getBudgets().stream()
+        BudgetResponse budget = budgetService.getBudgets(ledgerId).stream()
                 .filter(b -> b.yearMonth().equals(yearMonth))
                 .findFirst()
                 .orElse(null);

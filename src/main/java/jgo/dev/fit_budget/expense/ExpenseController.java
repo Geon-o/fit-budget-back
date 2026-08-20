@@ -19,31 +19,32 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/expenses")
+@RequestMapping("/api/ledgers/{ledgerId}/expenses")
 @RequiredArgsConstructor
 public class ExpenseController {
 
     private final ExpenseService expenseService;
 
     @GetMapping
-    public List<ExpenseResponse> getExpenses() {
-        return expenseService.getExpenses();
+    public List<ExpenseResponse> getExpenses(@PathVariable UUID ledgerId) {
+        return expenseService.getExpenses(ledgerId);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ExpenseResponse addExpense(@Valid @RequestBody ExpenseRequest request) {
-        return expenseService.addExpense(request);
+    public ExpenseResponse addExpense(@PathVariable UUID ledgerId, @Valid @RequestBody ExpenseRequest request) {
+        return expenseService.addExpense(ledgerId, request);
     }
 
     @PutMapping("/{id}")
-    public ExpenseResponse updateExpense(@PathVariable("id") UUID id, @Valid @RequestBody ExpenseRequest request) {
+    public ExpenseResponse updateExpense(
+            @PathVariable UUID ledgerId, @PathVariable("id") UUID id, @Valid @RequestBody ExpenseRequest request) {
         return expenseService.updateExpense(id, request);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteExpense(@PathVariable("id") UUID id) {
+    public void deleteExpense(@PathVariable UUID ledgerId, @PathVariable("id") UUID id) {
         expenseService.deleteExpense(id);
     }
 }
