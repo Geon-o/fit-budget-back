@@ -26,25 +26,25 @@ public class ExpenseController {
     private final ExpenseService expenseService;
 
     @GetMapping
-    public List<ExpenseResponse> getExpenses(@PathVariable UUID ledgerId) {
+    public List<ExpenseResponse> getExpenses(@PathVariable("ledgerId") UUID ledgerId) {
         return expenseService.getExpenses(ledgerId);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ExpenseResponse addExpense(@PathVariable UUID ledgerId, @Valid @RequestBody ExpenseRequest request) {
+    public ExpenseResponse addExpense(@PathVariable("ledgerId") UUID ledgerId, @Valid @RequestBody ExpenseRequest request) {
         return expenseService.addExpense(ledgerId, request);
     }
 
     @PutMapping("/{id}")
     public ExpenseResponse updateExpense(
-            @PathVariable UUID ledgerId, @PathVariable("id") UUID id, @Valid @RequestBody ExpenseRequest request) {
+            @PathVariable("ledgerId") UUID ledgerId, @PathVariable("id") UUID id, @Valid @RequestBody ExpenseRequest request) {
         return expenseService.updateExpense(id, request);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteExpense(@PathVariable UUID ledgerId, @PathVariable("id") UUID id) {
+    public void deleteExpense(@PathVariable("ledgerId") UUID ledgerId, @PathVariable("id") UUID id) {
         expenseService.deleteExpense(id);
     }
 }

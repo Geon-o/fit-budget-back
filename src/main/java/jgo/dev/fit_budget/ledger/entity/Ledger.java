@@ -21,11 +21,15 @@ public class Ledger {
     private UUID id;
 
     @Column(nullable = false)
+    private UUID ownerId;
+
+    @Column(nullable = false)
     private String name;
 
     private String color;
 
-    public Ledger(String name) {
+    public Ledger(UUID ownerId, String name) {
+        this.ownerId = ownerId;
         this.name = name;
     }
 

@@ -2,10 +2,14 @@ package jgo.dev.fit_budget.ledger;
 
 import jakarta.validation.Valid;
 import jgo.dev.fit_budget.ledger.dto.LedgerColorRequest;
+import jgo.dev.fit_budget.ledger.dto.LedgerMemberRequest;
+import jgo.dev.fit_budget.ledger.dto.LedgerMemberResponse;
 import jgo.dev.fit_budget.ledger.dto.LedgerRequest;
 import jgo.dev.fit_budget.ledger.dto.LedgerResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -28,29 +32,72 @@ public class LedgerController {
     private final LedgerService ledgerService;
 
     @GetMapping
-    public List<LedgerResponse> getLedgers() {
-        return ledgerService.getLedgers();
+    public List<LedgerResponse> getLedgers(@AuthenticationPrincipal OAuth2User principal) {
+        return ledgerService.getLedgers(email(principal));
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public LedgerResponse createLedger(@Valid @RequestBody LedgerRequest request) {
-        return ledgerService.createLedger(request);
+    public LedgerResponse createLedger(
+            @AuthenticationPrincipal OAuth2User principal,
+            @Valid @RequestBody LedgerRequest request
+    ) {
+        return ledgerService.createLedger(email(principal), request);
     }
 
     @PutMapping("/{id}")
-    public LedgerResponse updateLedger(@PathVariable UUID id, @Valid @RequestBody LedgerRequest request) {
-        return ledgerService.updateLedger(id, request);
+    public LedgerResponse updateLedger(
+            @AuthenticationPrincipal OAuth2User principal,
+            @PathVariable("id") UUID id,
+            @Valid @RequestBody LedgerRequest request
+    ) {
+        return ledgerService.updateLedger(email(principal), id, request);
     }
 
     @PatchMapping("/{id}/color")
-    public LedgerResponse updateColor(@PathVariable UUID id, @Valid @RequestBody LedgerColorRequest request) {
-        return ledgerService.updateColor(id, request);
+    public LedgerResponse updateColor(
+            @AuthenticationPrincipal OAuth2User principal,
+            @PathVariable("id") UUID id,
+            @Valid @RequestBody LedgerColorRequest request
+    ) {
+        return ledgerService.updateColor(email(principal), id, request);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteLedger(@PathVariable UUID id) {
-        ledgerService.deleteLedger(id);
+    public void deleteLedger(@AuthenticationPrincipal OAuth2User principal, @PathVariable("id") UUID id) {
+        ledgerService.deleteLedger(email(principal), id);
+    }
+
+    @GetMapping("/{id}/members")
+    public List<LedgerMemberResponse> getMembers(
+            @AuthenticationPrincipal OAuth2User principal,
+            @PathVariable("id") UUID id
+    ) {
+        return ledgerService.getMembers(email(principal), id);
+    }
+
+    @PostMapping("/{id}/members")
+    @ResponseStatus(HttpStatus.CREATED)
+    public LedgerMemberResponse inviteMember(
+            @AuthenticationPrincipal OAuth2User principal,
+            @PathVariable("id") UUID id,
+            @Valid @RequestBody LedgerMemberRequest request
+    ) {
+        return ledgerService.inviteMember(email(principal), id, request);
+    }
+
+    @DeleteMapping("/{id}/members/{memberId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void removeMember(
+            @AuthenticationPrincipal OAuth2User principal,
+            @PathVariable("id") UUID id,
+            @PathVariable("memberId") UUID memberId
+    ) {
+        ledgerService.removeMember(email(principal), id, memberId);
+    }
+
+    private String email(OAuth2User principal) {
+        return principal == null ? null : principal.getAttribute("email");
     }
 }

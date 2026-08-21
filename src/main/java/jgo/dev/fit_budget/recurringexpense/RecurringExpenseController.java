@@ -25,20 +25,20 @@ public class RecurringExpenseController {
     private final RecurringExpenseService recurringExpenseService;
 
     @GetMapping
-    public List<RecurringExpenseResponse> getRecurringExpenses(@PathVariable UUID ledgerId) {
+    public List<RecurringExpenseResponse> getRecurringExpenses(@PathVariable("ledgerId") UUID ledgerId) {
         return recurringExpenseService.getRecurringExpenses(ledgerId);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public RecurringExpenseResponse addRecurringExpense(
-            @PathVariable UUID ledgerId, @Valid @RequestBody RecurringExpenseRequest request) {
+            @PathVariable("ledgerId") UUID ledgerId, @Valid @RequestBody RecurringExpenseRequest request) {
         return recurringExpenseService.addRecurringExpense(ledgerId, request);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteRecurringExpense(@PathVariable UUID ledgerId, @PathVariable("id") UUID id) {
+    public void deleteRecurringExpense(@PathVariable("ledgerId") UUID ledgerId, @PathVariable("id") UUID id) {
         recurringExpenseService.deleteRecurringExpense(id);
     }
 }

@@ -20,7 +20,7 @@ public class AiController {
     private final AiService aiService;
 
     @PostMapping("/query")
-    public AiQueryResponse query(@PathVariable UUID ledgerId, @Valid @RequestBody AiQueryRequest request) {
+    public AiQueryResponse query(@PathVariable("ledgerId") UUID ledgerId, @Valid @RequestBody AiQueryRequest request) {
         return new AiQueryResponse(aiService.query(ledgerId, request.question()));
     }
 }

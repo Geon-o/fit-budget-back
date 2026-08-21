@@ -22,12 +22,12 @@ public class BudgetController {
     private final BudgetService budgetService;
 
     @GetMapping
-    public List<BudgetResponse> getBudgets(@PathVariable UUID ledgerId) {
+    public List<BudgetResponse> getBudgets(@PathVariable("ledgerId") UUID ledgerId) {
         return budgetService.getBudgets(ledgerId);
     }
 
     @PostMapping
-    public BudgetResponse saveBudget(@PathVariable UUID ledgerId, @Valid @RequestBody BudgetRequest request) {
+    public BudgetResponse saveBudget(@PathVariable("ledgerId") UUID ledgerId, @Valid @RequestBody BudgetRequest request) {
         return budgetService.saveBudget(ledgerId, request);
     }
 }
