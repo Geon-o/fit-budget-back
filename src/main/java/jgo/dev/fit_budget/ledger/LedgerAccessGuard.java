@@ -20,11 +20,11 @@ public class LedgerAccessGuard {
     private final LedgerMemberRepository ledgerMemberRepository;
     private final UserRepository userRepository;
 
-    public void checkAccess(String email, UUID ledgerId) {
-        if (email == null) {
+    public void checkAccess(String userId, UUID ledgerId) {
+        if (userId == null) {
             throw new ResponseStatusException(UNAUTHORIZED, "로그인이 필요합니다");
         }
-        User user = userRepository.findByEmail(email)
+        User user = userRepository.findById(UUID.fromString(userId))
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "사용자를 찾을 수 없습니다"));
         Ledger ledger = ledgerRepository.findById(ledgerId)
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "가계부를 찾을 수 없습니다"));

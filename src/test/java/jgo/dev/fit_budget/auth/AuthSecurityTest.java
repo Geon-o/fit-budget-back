@@ -11,6 +11,8 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.UUID;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -29,13 +31,13 @@ class AuthSecurityTest {
 
     @Test
     void meRequiresValidAccessToken() throws Exception {
-        when(authService.getCurrentUser(any())).thenReturn(new UserResponse(null, "a@b.com", "n", "nick"));
+        when(authService.getCurrentUser(any())).thenReturn(new UserResponse(null, "n", "nick"));
 
         mvc.perform(get("/api/auth/me")).andExpect(status().isUnauthorized());
-        mvc.perform(get("/api/auth/me").header("Authorization", "Bearer " + jwt.issueRefresh("a@b.com")))
+        mvc.perform(get("/api/auth/me").header("Authorization", "Bearer " + jwt.issueRefresh(UUID.randomUUID())))
                 .andExpect(status().isUnauthorized());
-        mvc.perform(get("/api/auth/me").header("Authorization", "Bearer " + jwt.issueAccess("a@b.com")))
+        mvc.perform(get("/api/auth/me").header("Authorization", "Bearer " + jwt.issueAccess(UUID.randomUUID())))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.email").value("a@b.com"));
+                .andExpect(jsonPath("$.nickname").value("nick"));
     }
 }

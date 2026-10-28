@@ -20,6 +20,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
+import java.util.UUID;
 
 @Component
 public class JwtProvider {
@@ -43,29 +44,29 @@ public class JwtProvider {
         this.decoder = NimbusJwtDecoder.withSecretKey(key).build();
     }
 
-    public String issueAccess(String email) {
-        return issue(email, ACCESS, ACCESS_TTL);
+    public String issueAccess(UUID userId) {
+        return issue(userId, ACCESS, ACCESS_TTL);
     }
 
     // ponytail: stateless refresh라 서버에서 폐기 불가 — 로그아웃 즉시 무효화가 필요하면 refresh 저장 테이블 추가
-    public String issueRefresh(String email) {
-        return issue(email, REFRESH, REFRESH_TTL);
+    public String issueRefresh(UUID userId) {
+        return issue(userId, REFRESH, REFRESH_TTL);
     }
 
-    /** 서명·만료가 유효하고 type이 일치하면 email, 아니면 empty. */
-    public Optional<String> verify(String token, String type) {
+    /** 서명·만료가 유효하고 type이 일치하면 userId, 아니면 empty. (subject가 이메일이던 예전 토큰도 empty) */
+    public Optional<UUID> verify(String token, String type) {
         try {
             Jwt jwt = decoder.decode(token);
-            return type.equals(jwt.getClaimAsString("type")) ? Optional.of(jwt.getSubject()) : Optional.empty();
-        } catch (JwtException e) {
+            return type.equals(jwt.getClaimAsString("type")) ? Optional.of(UUID.fromString(jwt.getSubject())) : Optional.empty();
+        } catch (JwtException | IllegalArgumentException e) {
             return Optional.empty();
         }
     }
 
-    private String issue(String email, String type, Duration ttl) {
+    private String issue(UUID userId, String type, Duration ttl) {
         Instant now = Instant.now();
         JwtClaimsSet claims = JwtClaimsSet.builder()
-                .subject(email)
+                .subject(userId.toString())
                 .claim("type", type)
                 .issuedAt(now)
                 .expiresAt(now.plus(ttl))

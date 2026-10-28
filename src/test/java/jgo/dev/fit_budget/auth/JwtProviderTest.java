@@ -2,6 +2,8 @@ package jgo.dev.fit_budget.auth;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.UUID;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -12,11 +14,12 @@ class JwtProviderTest {
 
     @Test
     void accessAndRefreshAreNotInterchangeable() {
-        String access = provider.issueAccess("a@b.com");
-        String refresh = provider.issueRefresh("a@b.com");
+        UUID userId = UUID.randomUUID();
+        String access = provider.issueAccess(userId);
+        String refresh = provider.issueRefresh(userId);
 
-        assertEquals("a@b.com", provider.verify(access, JwtProvider.ACCESS).orElseThrow());
-        assertEquals("a@b.com", provider.verify(refresh, JwtProvider.REFRESH).orElseThrow());
+        assertEquals(userId, provider.verify(access, JwtProvider.ACCESS).orElseThrow());
+        assertEquals(userId, provider.verify(refresh, JwtProvider.REFRESH).orElseThrow());
         assertTrue(provider.verify(refresh, JwtProvider.ACCESS).isEmpty());
         assertTrue(provider.verify(access, JwtProvider.REFRESH).isEmpty());
     }
@@ -24,7 +27,7 @@ class JwtProviderTest {
     @Test
     void rejectsGarbageAndForeignSignature() {
         assertTrue(provider.verify("garbage", JwtProvider.ACCESS).isEmpty());
-        String foreign = new JwtProvider("other-secret-other-secret-other-secret-1").issueAccess("a@b.com");
+        String foreign = new JwtProvider("other-secret-other-secret-other-secret-1").issueAccess(UUID.randomUUID());
         assertTrue(provider.verify(foreign, JwtProvider.ACCESS).isEmpty());
     }
 

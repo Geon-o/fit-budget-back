@@ -33,7 +33,7 @@ public class LedgerController {
 
     @GetMapping
     public List<LedgerResponse> getLedgers(@AuthenticationPrincipal OAuth2User principal) {
-        return ledgerService.getLedgers(email(principal));
+        return ledgerService.getLedgers(userId(principal));
     }
 
     @PostMapping
@@ -42,7 +42,7 @@ public class LedgerController {
             @AuthenticationPrincipal OAuth2User principal,
             @Valid @RequestBody LedgerRequest request
     ) {
-        return ledgerService.createLedger(email(principal), request);
+        return ledgerService.createLedger(userId(principal), request);
     }
 
     @PutMapping("/{id}")
@@ -51,7 +51,7 @@ public class LedgerController {
             @PathVariable("id") UUID id,
             @Valid @RequestBody LedgerRequest request
     ) {
-        return ledgerService.updateLedger(email(principal), id, request);
+        return ledgerService.updateLedger(userId(principal), id, request);
     }
 
     @PatchMapping("/{id}/color")
@@ -60,13 +60,13 @@ public class LedgerController {
             @PathVariable("id") UUID id,
             @Valid @RequestBody LedgerColorRequest request
     ) {
-        return ledgerService.updateColor(email(principal), id, request);
+        return ledgerService.updateColor(userId(principal), id, request);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteLedger(@AuthenticationPrincipal OAuth2User principal, @PathVariable("id") UUID id) {
-        ledgerService.deleteLedger(email(principal), id);
+        ledgerService.deleteLedger(userId(principal), id);
     }
 
     @GetMapping("/{id}/members")
@@ -74,7 +74,7 @@ public class LedgerController {
             @AuthenticationPrincipal OAuth2User principal,
             @PathVariable("id") UUID id
     ) {
-        return ledgerService.getMembers(email(principal), id);
+        return ledgerService.getMembers(userId(principal), id);
     }
 
     @PostMapping("/{id}/members")
@@ -84,7 +84,7 @@ public class LedgerController {
             @PathVariable("id") UUID id,
             @Valid @RequestBody LedgerMemberRequest request
     ) {
-        return ledgerService.inviteMember(email(principal), id, request);
+        return ledgerService.inviteMember(userId(principal), id, request);
     }
 
     @DeleteMapping("/{id}/members/{memberId}")
@@ -94,10 +94,10 @@ public class LedgerController {
             @PathVariable("id") UUID id,
             @PathVariable("memberId") UUID memberId
     ) {
-        ledgerService.removeMember(email(principal), id, memberId);
+        ledgerService.removeMember(userId(principal), id, memberId);
     }
 
-    private String email(OAuth2User principal) {
-        return principal == null ? null : principal.getAttribute("email");
+    private String userId(OAuth2User principal) {
+        return principal == null ? null : principal.getAttribute("userId");
     }
 }

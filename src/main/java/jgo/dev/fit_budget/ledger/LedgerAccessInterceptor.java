@@ -38,7 +38,7 @@ public class LedgerAccessInterceptor implements HandlerInterceptor {
         }
 
         OAuth2User principal = (OAuth2User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        ledgerAccessGuard.checkAccess(principal.getAttribute("email"), ledgerId);
+        ledgerAccessGuard.checkAccess(principal.getAttribute("userId"), ledgerId);
         return true;
     }
 }

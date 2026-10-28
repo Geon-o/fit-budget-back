@@ -28,10 +28,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         String header = request.getHeader("Authorization");
         if (header != null && header.startsWith(BEARER)) {
-            jwtProvider.verify(header.substring(BEARER.length()), JwtProvider.ACCESS).ifPresent(email -> {
-                // 컨트롤러·LedgerAccessInterceptor가 OAuth2User의 "email" 속성을 읽으므로 같은 타입으로 맞춘다.
+            jwtProvider.verify(header.substring(BEARER.length()), JwtProvider.ACCESS).ifPresent(userId -> {
+                // 컨트롤러·LedgerAccessInterceptor가 OAuth2User의 "userId" 속성을 읽는다.
                 var authorities = List.of(new SimpleGrantedAuthority("ROLE_USER"));
-                var principal = new DefaultOAuth2User(authorities, Map.of("email", email), "email");
+                var principal = new DefaultOAuth2User(authorities, Map.of("userId", userId.toString()), "userId");
                 SecurityContextHolder.getContext()
                         .setAuthentication(new UsernamePasswordAuthenticationToken(principal, null, authorities));
             });

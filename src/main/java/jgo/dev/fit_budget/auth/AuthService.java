@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.function.Supplier;
 
 import static org.springframework.http.HttpStatus.NOT_FOUND;
@@ -64,8 +65,8 @@ public class AuthService {
         if (principal == null) {
             throw new ResponseStatusException(UNAUTHORIZED, "로그인이 필요합니다");
         }
-        String email = principal.getAttribute("email");
-        User user = userRepository.findByEmail(email)
+        String userId = principal.getAttribute("userId");
+        User user = userRepository.findById(UUID.fromString(userId))
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "사용자를 찾을 수 없습니다"));
         return UserResponse.from(user);
     }
@@ -81,10 +82,7 @@ public class AuthService {
         } catch (JwtException e) {
             throw new ResponseStatusException(UNAUTHORIZED, "소셜 로그인 인증에 실패했습니다");
         }
-        if (!Boolean.TRUE.equals(jwt.getClaimAsBoolean("email_verified"))) {
-            throw new ResponseStatusException(UNAUTHORIZED, "인증된 이메일이 아닙니다");
-        }
-        return loginAs(jwt.getClaimAsString("email"), jwt.getClaimAsString("name"));
+        return loginAs("google", jwt.getSubject(), jwt.getClaimAsString("name"));
     }
 
     /**
@@ -110,14 +108,15 @@ public class AuthService {
                 .headers(h -> h.setBearerAuth(accessToken)).retrieve().body(MAP));
         @SuppressWarnings("unchecked")
         Map<String, Object> response = body == null ? null : (Map<String, Object>) body.get("response");
-        return loginAs(response == null ? null : (String) response.get("email"),
+        return loginAs("naver", response == null ? null : (String) response.get("id"),
                 response == null ? null : (String) response.get("name"));
     }
 
     public TokenResponse refresh(String refreshToken) {
-        String email = jwtProvider.verify(refreshToken, JwtProvider.REFRESH)
+        UUID userId = jwtProvider.verify(refreshToken, JwtProvider.REFRESH)
+                .filter(userRepository::existsById)
                 .orElseThrow(() -> new ResponseStatusException(UNAUTHORIZED, "다시 로그인해 주세요"));
-        return tokens(email);
+        return tokens(userId);
     }
 
     static OAuth2TokenValidator<Jwt> googleIdTokenValidator(List<String> clientIds) {
@@ -127,17 +126,17 @@ public class AuthService {
                         aud -> aud != null && aud.stream().anyMatch(clientIds::contains)));
     }
 
-    private TokenResponse loginAs(String email, String name) {
-        if (email == null) {
-            throw new ResponseStatusException(UNAUTHORIZED, "이메일을 가져올 수 없습니다");
+    private TokenResponse loginAs(String provider, String providerId, String name) {
+        if (providerId == null) {
+            throw new ResponseStatusException(UNAUTHORIZED, "소셜 로그인 인증에 실패했습니다");
         }
-        userRepository.findByEmail(email)
-                .orElseGet(() -> userRepository.save(new User(email, name, NicknameGenerator.generate())));
-        return tokens(email);
+        User user = userRepository.findByProviderAndProviderId(provider, providerId)
+                .orElseGet(() -> userRepository.save(new User(provider, providerId, name, NicknameGenerator.generate())));
+        return tokens(user.getId());
     }
 
-    private TokenResponse tokens(String email) {
-        return new TokenResponse(jwtProvider.issueAccess(email), jwtProvider.issueRefresh(email));
+    private TokenResponse tokens(UUID userId) {
+        return new TokenResponse(jwtProvider.issueAccess(userId), jwtProvider.issueRefresh(userId));
     }
 
     private static Map<String, Object> call(Supplier<Map<String, Object>> request) {

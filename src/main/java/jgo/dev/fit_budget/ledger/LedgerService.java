@@ -40,11 +40,11 @@ public class LedgerService {
     private final RecurringExpenseRepository recurringExpenseRepository;
     private final MonthClosureRepository monthClosureRepository;
 
-    private User resolveUser(String email) {
-        if (email == null) {
+    private User resolveUser(String userId) {
+        if (userId == null) {
             throw new ResponseStatusException(UNAUTHORIZED, "로그인이 필요합니다");
         }
-        return userRepository.findByEmail(email)
+        return userRepository.findById(UUID.fromString(userId))
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "사용자를 찾을 수 없습니다"));
     }
 
@@ -61,8 +61,8 @@ public class LedgerService {
         return ledger;
     }
 
-    public List<LedgerResponse> getLedgers(String email) {
-        User user = resolveUser(email);
+    public List<LedgerResponse> getLedgers(String userId) {
+        User user = resolveUser(userId);
 
         Map<UUID, Ledger> ledgers = new LinkedHashMap<>();
         for (Ledger ledger : ledgerRepository.findByOwnerId(user.getId())) {
@@ -80,31 +80,31 @@ public class LedgerService {
                 .toList();
     }
 
-    public LedgerResponse createLedger(String email, LedgerRequest request) {
-        User user = resolveUser(email);
+    public LedgerResponse createLedger(String userId, LedgerRequest request) {
+        User user = resolveUser(userId);
         Ledger ledger = new Ledger(user.getId(), request.name());
         return LedgerResponse.from(ledgerRepository.save(ledger));
     }
 
     @Transactional
-    public LedgerResponse updateLedger(String email, UUID id, LedgerRequest request) {
-        User user = resolveUser(email);
+    public LedgerResponse updateLedger(String userId, UUID id, LedgerRequest request) {
+        User user = resolveUser(userId);
         Ledger ledger = findLedgerWithAccess(id, user.getId());
         ledger.update(request.name());
         return LedgerResponse.from(ledger);
     }
 
     @Transactional
-    public LedgerResponse updateColor(String email, UUID id, LedgerColorRequest request) {
-        User user = resolveUser(email);
+    public LedgerResponse updateColor(String userId, UUID id, LedgerColorRequest request) {
+        User user = resolveUser(userId);
         Ledger ledger = findLedgerWithAccess(id, user.getId());
         ledger.updateColor(request.color());
         return LedgerResponse.from(ledger);
     }
 
     @Transactional
-    public void deleteLedger(String email, UUID id) {
-        User user = resolveUser(email);
+    public void deleteLedger(String userId, UUID id) {
+        User user = resolveUser(userId);
         Ledger ledger = ledgerRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "가계부를 찾을 수 없습니다"));
         if (!ledger.getOwnerId().equals(user.getId())) {
@@ -119,8 +119,8 @@ public class LedgerService {
         ledgerRepository.deleteById(id);
     }
 
-    public List<LedgerMemberResponse> getMembers(String email, UUID ledgerId) {
-        User user = resolveUser(email);
+    public List<LedgerMemberResponse> getMembers(String userId, UUID ledgerId) {
+        User user = resolveUser(userId);
         findLedgerWithAccess(ledgerId, user.getId());
 
         return ledgerMemberRepository.findByLedgerId(ledgerId).stream()
@@ -130,16 +130,16 @@ public class LedgerService {
     }
 
     @Transactional
-    public LedgerMemberResponse inviteMember(String email, UUID ledgerId, LedgerMemberRequest request) {
-        User currentUser = resolveUser(email);
+    public LedgerMemberResponse inviteMember(String userId, UUID ledgerId, LedgerMemberRequest request) {
+        User currentUser = resolveUser(userId);
         Ledger ledger = ledgerRepository.findById(ledgerId)
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "가계부를 찾을 수 없습니다"));
         if (!ledger.getOwnerId().equals(currentUser.getId())) {
             throw new ResponseStatusException(FORBIDDEN, "가계부 소유자만 초대할 수 있어요");
         }
 
-        User invitee = userRepository.findByEmail(request.email())
-                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "먼저 구글/네이버 로그인을 한 이력이 있는 이메일만 초대할 수 있어요"));
+        User invitee = userRepository.findById(request.userId())
+                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "사용자를 찾을 수 없습니다"));
         if (ledgerMemberRepository.existsByLedgerIdAndUserId(ledgerId, invitee.getId())) {
             throw new ResponseStatusException(CONFLICT, "이미 초대된 사용자예요");
         }
@@ -148,8 +148,8 @@ public class LedgerService {
     }
 
     @Transactional
-    public void removeMember(String email, UUID ledgerId, UUID memberId) {
-        User currentUser = resolveUser(email);
+    public void removeMember(String userId, UUID ledgerId, UUID memberId) {
+        User currentUser = resolveUser(userId);
         Ledger ledger = ledgerRepository.findById(ledgerId)
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "가계부를 찾을 수 없습니다"));
         if (!ledger.getOwnerId().equals(currentUser.getId())) {
