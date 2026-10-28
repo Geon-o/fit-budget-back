@@ -27,7 +27,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/me").authenticated()
-                        // /api/ledgers/{ledgerId}/... 하위(예산/지출/고정지출/월마감/AI)는
+                        // /api/ledgers/{ledgerId}/... 하위(예산/지출/고정지출/월마감)는
                         // LedgerAccessInterceptor가 소유권을 검증한다.
                         .requestMatchers("/api/ledgers/**").authenticated()
                         .anyRequest().permitAll()

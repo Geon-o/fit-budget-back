@@ -12,7 +12,7 @@ import org.springframework.web.servlet.HandlerMapping;
 import java.util.Map;
 import java.util.UUID;
 
-// /api/ledgers/{ledgerId}/... 하위 요청(예산/지출/고정지출/월마감/AI)마다 컨트롤러에서 각각
+// /api/ledgers/{ledgerId}/... 하위 요청(예산/지출/고정지출/월마감)마다 컨트롤러에서 각각
 // 소유권 검증을 하는 대신, 여기서 한 번에 "이 유저가 이 ledgerId에 접근 가능한지"를 확인한다.
 @Component
 @RequiredArgsConstructor
